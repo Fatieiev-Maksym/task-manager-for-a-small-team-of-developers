@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Видалити задачу{% endblock %}
+
+{% block content %}
+<h1 class="h3">Видалити задачу</h1>
+<p class="text-secondary">
+    Ви дійсно хочете видалити задачу <strong>{{ task.title }}</strong>?
+</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button class="btn btn-danger" type="submit">Видалити</button>
+    <a class="btn btn-outline-secondary" href="{% url 'tasks:detail' task.pk %}">Скасувати</a>
+</form>
+{% endblock %}

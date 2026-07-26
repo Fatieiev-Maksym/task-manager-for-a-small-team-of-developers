@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% load sort_tags %}
+
+{% block title %}{{ team.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="h3 mb-1">{{ team.name }}</h1>
+        <p class="text-secondary mb-0">Власник: {{ team.owner.username }}</p>
+    </div>
+    {% if team.owner == request.user %}
+        <div class="page-actions">
+            <a class="btn btn-primary" href="{% url 'projects:create' %}?team={{ team.pk }}">Створити проєкт</a>
+            <a class="btn btn-outline-primary" href="{% url 'teams:edit' team.pk %}">Редагувати</a>
+            <a class="btn btn-outline-danger" href="{% url 'teams:delete' team.pk %}">Видалити</a>
+        </div>
+    {% elif can_leave_team %}
+        <div class="page-actions">
+            <form method="post" action="{% url 'teams:leave' team.pk %}" onsubmit="return confirm('Ви впевнені, що хочете вийти з цієї команди?');">
+                {% csrf_token %}
+                <button class="btn btn-outline-danger" type="submit">Вийти з команди</button>
+            </form>
+        </div>
+    {% endif %}
+</div>
+
+<section class="content-card">
+    <h2 class="h5">Опис</h2>
+    <p>{{ team.description|default:"Опис не вказано" }}</p>
+</section>
+
+<section class="content-card">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h5 mb-0">Учасники</h2>
+        {% if team.owner == request.user %}
+            <a class="btn btn-primary btn-sm" href="{% url 'teams:member_add' team.pk %}">Додати учасника</a>
+        {% endif %}
+    </div>
+    {% if members %}
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+                <thead>
+                    <tr>
+                        <th class="sortable-header">
+                            <span class="sortable-label">Користувач</span>
+                            <a class="sort-arrow {% sort_column_active_class 'user' %}" href="{% sort_url 'user' %}" aria-label="Сортувати користувача">{% sort_arrow 'user' %}</a>
+                        </th>
+                        <th class="sortable-header">
+                            <span class="sortable-label">Email</span>
+                            <a class="sort-arrow {% sort_column_active_class 'email' %}" href="{% sort_url 'email' %}" aria-label="Сортувати email">{% sort_arrow 'email' %}</a>
+                        </th>
+                        <th class="sortable-header">
+                            <span class="sortable-label">Роль</span>
+                            <a class="sort-arrow {% sort_column_active_class 'role' %}" href="{% sort_url 'role' %}" aria-label="Сортувати роль">{% sort_arrow 'role' %}</a>
+                        </th>
+                        <th class="sortable-header">
+                            <span class="sortable-label">Дата приєднання</span>
+                            <a class="sort-arrow {% sort_column_active_class 'joined' %}" href="{% sort_url 'joined' %}" aria-label="Сортувати дату приєднання">{% sort_arrow 'joined' %}</a>
+                        </th>
+                        {% if team.owner == request.user %}
+                            <th>Дії</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for member in members %}
+                        <tr>
+                            <td>{{ member.user.username }}</td>
+                            <td>{{ member.user.email|default:"Не вказано" }}</td>
+                            <td>{{ member.role_label }}</td>
+                            <td>{{ member.joined_at|date:"d.m.Y H:i" }}</td>
+                            {% if team.owner == request.user %}
+                                <td>
+                                    {% if member.user_id != team.owner_id %}
+                                        <div class="d-flex gap-2">
+                                            <a class="btn btn-outline-primary btn-sm" href="{% url 'teams:member_edit' team.pk member.pk %}">Змінити роль</a>
+                                            <a class="btn btn-outline-danger btn-sm" href="{% url 'teams:member_delete' team.pk member.pk %}">Видалити</a>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-secondary">-</span>
+                                    {% endif %}
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">У цій команді ще немає учасників.</div>
+    {% endif %}
+</section>
+{% endblock %}

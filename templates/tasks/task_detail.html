@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+{% load status_tags %}
+
+{% block title %}{{ task.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="h3 mb-1">{{ task.title }}</h1>
+        <p class="text-secondary mb-0">
+            Проєкт: <a href="{% url 'projects:detail' task.project.pk %}">{{ task.project.name }}</a>
+        </p>
+    </div>
+    {% if can_start or can_manage or can_delete %}
+        <div class="page-actions">
+            {% if can_start %}
+                <form method="post" action="{% url 'tasks:start' task.pk %}">
+                    {% csrf_token %}
+                    <button class="btn btn-primary" type="submit">Взяти в роботу</button>
+                </form>
+            {% endif %}
+            {% if can_manage %}
+                <a class="btn btn-outline-primary" href="{% url 'tasks:edit' task.pk %}">Редагувати</a>
+            {% endif %}
+            {% if can_delete %}
+                <a class="btn btn-outline-danger" href="{% url 'tasks:delete' task.pk %}">Видалити</a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+<section class="content-card">
+    <h2 class="h5">Опис</h2>
+    {{ task.description|default:"Опис не вказано"|linebreaks }}
+</section>
+
+<section class="content-card">
+    <h2 class="h5">Файли постановки задачі</h2>
+
+    {% if attachments %}
+        <div class="task-attachments">
+            {% for attachment in attachments %}
+                <div class="task-attachment">
+                    {% if attachment.is_image_attachment %}
+                        <a href="{% url 'tasks:attachment_download' attachment.pk %}" target="_blank" rel="noopener">
+                            <img
+                                class="task-attachment-image"
+                                src="{% url 'tasks:attachment_download' attachment.pk %}"
+                                alt="{{ attachment.file_name }}"
+                            >
+                        </a>
+                        <div class="task-attachment-actions">
+                            <a href="{% url 'tasks:attachment_download' attachment.pk %}?download=1">Завантажити</a>
+                        </div>
+                    {% else %}
+                        <div class="task-file-card">
+                            <div class="task-file-name">{{ attachment.file_name }}</div>
+                            <a href="{% url 'tasks:attachment_download' attachment.pk %}?download=1">Завантажити</a>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-secondary mb-0">Файли до постановки задачі не додані.</p>
+    {% endif %}
+</section>
+
+<section class="content-card">
+    <h2 class="h5">Інформація</h2>
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+            <tbody>
+                <tr>
+                    <th scope="row">Статус</th>
+                    <td>{{ task.status.name|task_status_uk }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Пріоритет</th>
+                    <td>{{ task.priority|task_priority_uk }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Виконавець</th>
+                    <td>{{ task.assignee.username|default:"Не призначено" }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Створив</th>
+                    <td>{{ task.created_by.username }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Дедлайн</th>
+                    <td>{{ task.deadline|date:"d.m.Y"|default:"Не вказано" }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Створено</th>
+                    <td>{{ task.created_at|date:"d.m.Y H:i" }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Оновлено</th>
+                    <td>{{ task.updated_at|date:"d.m.Y H:i" }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="content-card">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h5 mb-0">Результати виконання</h2>
+        {% if can_submit %}
+            <a class="btn btn-primary btn-sm" href="{% url 'tasks:submit' task.pk %}">Надіслати результат</a>
+        {% endif %}
+    </div>
+
+    {% if submissions %}
+        <div class="list-group">
+            {% for submission in submissions %}
+                <div class="list-group-item task-comment">
+                    <div class="d-flex justify-content-between gap-3 mb-2">
+                        <div>
+                            <div class="fw-semibold">{{ submission.submitted_by.username }}</div>
+                            <div class="text-secondary small">{{ submission.created_at|date:"d.m.Y H:i" }}</div>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        {{ submission.description|linebreaks }}
+                    </div>
+                    {% if submission.result_link %}
+                        <div class="mb-1">
+                            <a href="{{ submission.result_link }}" target="_blank" rel="noopener">Посилання на результат</a>
+                        </div>
+                    {% endif %}
+                    {% if submission.attachment %}
+                        <div>
+                            <a href="{% url 'tasks:submission_download' submission.pk %}">Завантажити файл</a>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-secondary">Результати виконання ще не надсилалися.</p>
+    {% endif %}
+</section>
+
+{% if can_review %}
+    <section class="content-card">
+        <h2 class="h5 mb-3">Перевірка виконання</h2>
+        <div class="border rounded p-3 bg-light">
+            <form class="mb-3" method="post" action="{% url 'tasks:accept' task.pk %}">
+                {% csrf_token %}
+                <button class="btn btn-success" type="submit">Затвердити</button>
+            </form>
+
+            <form method="post" action="{% url 'tasks:return_for_revision' task.pk %}" novalidate>
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label" for="{{ return_form.reason.id_for_label }}">Повернути на доопрацювання</label>
+                    {{ return_form.reason }}
+                    {{ return_form.reason.errors }}
+                </div>
+                <button class="btn btn-outline-warning" type="submit">Відхилити</button>
+            </form>
+        </div>
+    </section>
+{% endif %}
+
+<section class="content-card">
+    <h2 class="h5 mb-3">Коментарі</h2>
+
+    {% if comments %}
+        <div class="list-group mb-4">
+            {% for comment in comments %}
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <div>
+                            <div class="fw-semibold">{{ comment.author.username }}</div>
+                            <div class="text-secondary small">
+                                {{ comment.author.email|default:"Email не вказано" }} · {{ comment.created_at|date:"d.m.Y H:i" }}
+                            </div>
+                        </div>
+                        {% if comment.can_delete %}
+                            <form method="post" action="{% url 'tasks:comment_delete' comment.pk %}">
+                                {% csrf_token %}
+                                <button class="btn btn-outline-danger btn-sm" type="submit">Видалити</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                    <div class="mt-3">
+                        {{ comment.text|linebreaks }}
+                    </div>
+                    {% if comment.attachments.all %}
+                        <div class="comment-attachments">
+                            {% for attachment in comment.attachments.all %}
+                                <div class="comment-attachment">
+                                    {% if attachment.is_image_attachment %}
+                                        <a href="{% url 'tasks:comment_attachment_download' attachment.pk %}" target="_blank" rel="noopener">
+                                            <img
+                                                class="comment-image-preview"
+                                                src="{% url 'tasks:comment_attachment_download' attachment.pk %}?thumbnail=1"
+                                                alt="{{ attachment.file_name }}"
+                                            >
+                                        </a>
+                                        <div class="comment-attachment-actions">
+                                            <a href="{% url 'tasks:comment_attachment_download' attachment.pk %}?download=1">
+                                                Завантажити вкладення
+                                            </a>
+                                        </div>
+                                    {% else %}
+                                        <div class="comment-file-card">
+                                            <div class="comment-file-name">{{ attachment.file_name }}</div>
+                                            <a href="{% url 'tasks:comment_attachment_download' attachment.pk %}?download=1">
+                                                Завантажити вкладення
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">Коментарів ще немає.</div>
+    {% endif %}
+
+    {% if can_comment %}
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+
+            {% if comment_form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ comment_form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <div class="mb-3">
+                <label class="form-label" for="{{ comment_form.text.id_for_label }}">Новий коментар</label>
+                {{ comment_form.text }}
+                {{ comment_form.text.errors }}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="comment-attachments">Вкладення</label>
+                <input class="form-control" id="comment-attachments" type="file" name="attachments" multiple>
+                <div class="form-text">
+                    До 10 МБ. Дозволені: pdf, doc, docx, xls, xlsx, txt, png, jpg, jpeg, webp.
+                </div>
+            </div>
+
+            <button class="btn btn-primary" type="submit">Додати коментар</button>
+        </form>
+    {% endif %}
+</section>
+{% endblock %}

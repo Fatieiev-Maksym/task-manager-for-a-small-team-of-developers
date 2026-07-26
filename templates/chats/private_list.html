@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Приватні чати{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="h3 mb-0">Приватні чати</h1>
+    <a class="btn btn-outline-secondary" href="{% url 'chats:list' %}">Командні чати</a>
+</div>
+
+{% if not has_private_chat_options %}
+    <div class="empty-state">
+        Немає доступних приватних чатів.
+    </div>
+{% endif %}
+
+{% if private_chats %}
+    <section class="content-card">
+        <h2 class="h5 mb-3">Поточні діалоги</h2>
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+                <thead>
+                    <tr>
+                        <th>Співрозмовник</th>
+                        <th>Останнє повідомлення</th>
+                        <th class="text-end">Дія</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for private_chat in private_chats %}
+                        <tr>
+                            <td>{{ private_chat.other_user.username }}</td>
+                            <td>{{ private_chat.last_message_at|date:"d.m.Y H:i"|default:"Повідомлень ще немає" }}</td>
+                            <td class="text-end">
+                                <a class="btn btn-outline-primary btn-sm" href="{% url 'chats:private_detail' private_chat.pk %}">
+                                    Відкрити чат
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+{% endif %}
+
+{% if available_users %}
+    <section class="content-card">
+        <h2 class="h5 mb-3">Доступні співрозмовники</h2>
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+                <thead>
+                    <tr>
+                        <th>Користувач</th>
+                        <th>Email</th>
+                        <th class="text-end">Дія</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user_item in available_users %}
+                        <tr>
+                            <td>{{ user_item.username }}</td>
+                            <td>{{ user_item.email|default:"Email не вказано" }}</td>
+                            <td class="text-end">
+                                <a class="btn btn-primary btn-sm" href="{% url 'chats:private_start' user_item.pk %}">
+                                    Відкрити приватний чат
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+{% endif %}
+{% endblock %}

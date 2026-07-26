@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Головна{% endblock %}
+{# Основний вміст сторінки#}
+{% block content %}
+<div class="landing-page">
+    <section class="landing-hero">
+        <div class="landing-card">
+            
+            <h1>Система керування задачами</h1>
+            <p class="landing-subtitle">
+                Веб-застосування для організації командної роботи, створення задач,
+                контролю дедлайнів та обміну повідомленнями.
+            </p>
+            <p class="landing-tech">
+                Розроблена з використанням Python, побудована на фреймворку Django та СУБД PostgreSQL.
+            </p>
+            <div class="landing-actions">
+                <a class="btn btn-primary" href="{% url 'accounts:register' %}">Зареєструватися</a>
+                <a class="btn btn-outline-secondary" href="{% url 'accounts:login' %}">Увійти</a>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

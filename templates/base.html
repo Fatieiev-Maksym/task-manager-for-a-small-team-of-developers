@@ -1,0 +1,65 @@
+{% load static %}
+<!doctype html>
+<html lang="uk">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Diploma Task Manager{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg app-navbar border-bottom">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'core:home' %}">Система керування задачами</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNav">
+                {% with app=request.resolver_match.app_name url_name=request.resolver_match.url_name %}
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link {% if app == 'core' and url_name == 'dashboard' %}active{% endif %}" href="{% url 'core:dashboard' %}">Панель керування</a></li>
+                    <li class="nav-item"><a class="nav-link {% if app == 'teams' %}active{% endif %}" href="{% url 'teams:list' %}">Команди</a></li>
+                    <li class="nav-item"><a class="nav-link {% if app == 'projects' %}active{% endif %}" href="{% url 'projects:list' %}">Проєкти</a></li>
+                    <li class="nav-item"><a class="nav-link {% if app == 'tasks' %}active{% endif %}" href="{% url 'tasks:list' %}">Задачі</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if app == 'notifications' %}active{% endif %}" href="{% url 'notifications:list' %}">
+                            Сповіщення{% if request.user.is_authenticated and unread_notifications_count %} ({{ unread_notifications_count }}){% endif %}
+                        </a>
+                    </li>
+                    <li class="nav-item"><a class="nav-link {% if app == 'chats' %}active{% endif %}" href="{% url 'chats:list' %}">Чати</a></li>
+                    {% if request.user.is_authenticated %}
+                        <li class="nav-item"><a class="nav-link {% if app == 'accounts' and url_name == 'profile' %}active{% endif %}" href="{% url 'accounts:profile' %}">Профіль</a></li>
+                        <li class="nav-item">
+                            <form class="d-inline" method="post" action="{% url 'accounts:logout' %}">
+                                {% csrf_token %}
+                                <button class="nav-link btn btn-link app-nav-button" type="submit">Вийти</button>
+                            </form>
+                        </li>
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link {% if app == 'accounts' and url_name == 'login' %}active{% endif %}" href="{% url 'accounts:login' %}">Вхід</a></li>
+                        <li class="nav-item"><a class="nav-link {% if app == 'accounts' and url_name == 'register' %}active{% endif %}" href="{% url 'accounts:register' %}">Реєстрація</a></li>
+                    {% endif %}
+                </ul>
+                {% endwith %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="container app-shell">
+        {% if messages %}
+            <div class="app-alerts">
+                {% for message in messages %}
+                    <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-{{ message.tags|default:'info' }}{% endif %} mb-3">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Видалити учасника{% endblock %}
+
+{% block content %}
+<h1 class="h3">Видалити учасника</h1>
+<p class="text-secondary">
+    Ви дійсно хочете видалити користувача <strong>{{ member.user.username }}</strong>
+    з команди <strong>{{ team.name }}</strong>?
+</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button class="btn btn-danger" type="submit">Видалити</button>
+    <a class="btn btn-outline-secondary" href="{% url 'teams:detail' team.pk %}">Скасувати</a>
+</form>
+{% endblock %}

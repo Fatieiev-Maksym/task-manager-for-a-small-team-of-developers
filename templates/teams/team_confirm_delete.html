@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Видалити команду{% endblock %}
+
+{% block content %}
+<h1 class="h3">Видалити команду</h1>
+<p class="text-secondary">
+    Ви дійсно хочете видалити команду <strong>{{ team.name }}</strong>?
+</p>
+
+{% if has_projects %}
+    <div class="alert alert-warning">
+        Цю команду не можна видалити, поки до неї прив’язані проєкти.
+    </div>
+    <a class="btn btn-outline-secondary" href="{% url 'teams:detail' team.pk %}">Повернутися до команди</a>
+{% else %}
+    <form method="post">
+        {% csrf_token %}
+        <button class="btn btn-danger" type="submit">Видалити</button>
+        <a class="btn btn-outline-secondary" href="{% url 'teams:detail' team.pk %}">Скасувати</a>
+    </form>
+{% endif %}
+{% endblock %}

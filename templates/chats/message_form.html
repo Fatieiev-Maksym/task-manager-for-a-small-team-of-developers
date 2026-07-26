@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Редагувати повідомлення{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-7">
+        <h1 class="h3 mb-3">Редагувати повідомлення</h1>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <div class="mb-3">
+                <label class="form-label" for="{{ form.text.id_for_label }}">Текст повідомлення</label>
+                {{ form.text }}
+                {{ form.text.errors }}
+            </div>
+
+            <button class="btn btn-primary" type="submit">Зберегти</button>
+            <a class="btn btn-outline-secondary" href="{% url 'chats:team_chat' chat_message.team.pk %}">Скасувати</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

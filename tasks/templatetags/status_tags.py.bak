@@ -1,0 +1,37 @@
+from django import template
+
+register = template.Library()
+
+STATUS_LABELS_UK = {
+    "To Do": "До виконання",
+    "In Progress": "У роботі",
+    "In Review": "На перевірці",
+    "Done": "Виконано",
+
+    # запасні варіанти, якщо десь статуси зберігаються інакше
+    "todo": "До виконання",
+    "to_do": "До виконання",
+    "in_progress": "У роботі",
+    "in_review": "На перевірці",
+    "done": "Виконано",
+}
+
+
+@register.filter
+def status_uk(value):
+    return STATUS_LABELS_UK.get(str(value), value)
+
+
+@register.filter
+def status_label(value):
+    return STATUS_LABELS_UK.get(str(value), value)
+
+
+@register.filter
+def status_display_uk(value):
+    return STATUS_LABELS_UK.get(str(value), value)
+
+
+@register.filter
+def uk_status(value):
+    return STATUS_LABELS_UK.get(str(value), value)

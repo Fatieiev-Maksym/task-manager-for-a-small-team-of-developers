@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-7">
+        <div class="form-card">
+        <h1 class="h3 mb-3">{{ title }}</h1>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <div class="mb-3">
+                <label class="form-label" for="{{ form.team.id_for_label }}">Команда</label>
+                {{ form.team }}
+                {{ form.team.errors }}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="{{ form.name.id_for_label }}">Назва</label>
+                {{ form.name }}
+                {{ form.name.errors }}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="{{ form.description.id_for_label }}">Опис</label>
+                {{ form.description }}
+                {{ form.description.errors }}
+            </div>
+
+            <button class="btn btn-primary" type="submit">Зберегти</button>
+            {% if project %}
+                <a class="btn btn-outline-secondary" href="{% url 'projects:detail' project.pk %}">Скасувати</a>
+            {% else %}
+                <a class="btn btn-outline-secondary" href="{% url 'projects:list' %}">Скасувати</a>
+            {% endif %}
+        </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

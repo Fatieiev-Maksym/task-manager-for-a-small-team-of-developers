@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Сповіщення{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="h3 mb-1">Сповіщення</h1>
+        <p class="text-secondary mb-0">Непрочитані: {{ unread_count }}</p>
+    </div>
+    {% if unread_count %}
+        <form method="post" action="{% url 'notifications:read_all' %}">
+            {% csrf_token %}
+            <button class="btn btn-outline-primary" type="submit">Позначити всі як прочитані</button>
+        </form>
+    {% endif %}
+</div>
+
+{% if notifications %}
+    <div class="list-group notification-list">
+        {% for notification in notifications %}
+            <div class="list-group-item notification-item {% if not notification.is_read %}notification-unread{% endif %}">
+                <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div>
+                        <h2 class="h5 mb-1">{{ notification.title }}</h2>
+                        <p class="mb-2">{{ notification.message }}</p>
+                        {% if notification.task %}
+                            <div class="mb-2">
+                                <a href="{% url 'tasks:detail' notification.task.pk %}">Відкрити задачу</a>
+                            </div>
+                        {% endif %}
+                        <div class="text-secondary small">{{ notification.created_at|date:"d.m.Y H:i" }}</div>
+                    </div>
+                    <div class="text-end">
+                        {% if notification.is_read %}
+                            <span class="badge text-bg-secondary mb-2">Прочитане</span>
+                        {% else %}
+                            <span class="badge text-bg-primary mb-2">Непрочитане</span>
+                            <form method="post" action="{% url 'notifications:read' notification.pk %}">
+                                {% csrf_token %}
+                                <button class="btn btn-sm btn-outline-primary" type="submit">Позначити, як прочитане</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">У вас ще немає сповіщень.</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Надіслати результат{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-7">
+        <div class="form-card">
+        <h1 class="h3 mb-3">Надіслати результат виконання</h1>
+        <p class="text-secondary mb-4">{{ task.title }}</p>
+
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <div class="mb-3">
+                <label class="form-label" for="{{ form.description.id_for_label }}">Опис результату</label>
+                {{ form.description }}
+                {{ form.description.errors }}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="{{ form.result_link.id_for_label }}">Посилання на результат</label>
+                {{ form.result_link }}
+                {{ form.result_link.errors }}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="{{ form.attachment.id_for_label }}">Файл</label>
+                {{ form.attachment }}
+                {{ form.attachment.errors }}
+            </div>
+
+            <button class="btn btn-primary" type="submit">Надіслати на перевірку</button>
+            <a class="btn btn-outline-secondary" href="{% url 'tasks:detail' task.pk %}">Скасувати</a>
+        </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

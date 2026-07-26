@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% load status_tags %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-7">
+        <div class="form-card">
+        <h1 class="h3 mb-3">{{ title }}</h1>
+
+        {% if form.fields.project.queryset %}
+            <form method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div class="mb-3">
+                    <label class="form-label" for="{{ form.project.id_for_label }}">Проєкт</label>
+                    {{ form.project }}
+                    {{ form.project.errors }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="{{ form.title.id_for_label }}">Назва</label>
+                    {{ form.title }}
+                    {{ form.title.errors }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="{{ form.description.id_for_label }}">Опис</label>
+                    {{ form.description }}
+                    {{ form.description.errors }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="task-attachments">Файли постановки задачі</label>
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <input class="visually-hidden" id="task-attachments" type="file" name="attachments" multiple>
+                        <label class="btn btn-outline-primary mb-0" for="task-attachments">Обрати файли</label>
+                        <span class="text-secondary small" id="task-attachments-status">Файли не вибрано</span>
+                    </div>
+                    <div class="form-text">Можна додати скріншоти або файли до 10 МБ.</div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="{{ form.priority.id_for_label }}">Пріоритет</label>
+                        {{ form.priority }}
+                        {{ form.priority.errors }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="form-label">
+                            {% if task %}Поточний статус{% else %}Статус{% endif %}
+                        </div>
+                        <div class="form-control bg-light" aria-readonly="true">
+                            {{ status_hint|task_status_uk }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    {% if form.fields.assignee %}
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="{{ form.assignee.id_for_label }}">Виконавець</label>
+                            {{ form.assignee }}
+                            {{ form.assignee.errors }}
+                        </div>
+                    {% elif task %}
+                        <div class="col-md-6 mb-3">
+                            <div class="form-label">Виконавець</div>
+                            <div class="form-control-plaintext">
+                                {{ task.assignee.username|default:"Не призначено" }}
+                            </div>
+                        </div>
+                    {% endif %}
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="{{ form.deadline.id_for_label }}">Дедлайн</label>
+                        {{ form.deadline }}
+                        {{ form.deadline.errors }}
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" type="submit">Зберегти</button>
+                {% if task %}
+                    <a class="btn btn-outline-secondary" href="{% url 'tasks:detail' task.pk %}">Скасувати</a>
+                {% elif selected_project %}
+                    <a class="btn btn-outline-secondary" href="{% url 'projects:detail' selected_project.pk %}">Скасувати</a>
+                {% else %}
+                    <a class="btn btn-outline-secondary" href="{% url 'tasks:list' %}">Скасувати</a>
+                {% endif %}
+            </form>
+        {% else %}
+            <div class="alert alert-info">
+                Щоб створити задачу, спочатку створіть команду і проєкт.
+            </div>
+            <a class="btn btn-primary" href="{% url 'teams:create' %}">Створити команду</a>
+        {% endif %}
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const input = document.getElementById("task-attachments");
+        const status = document.getElementById("task-attachments-status");
+
+        if (!input || !status) {
+            return;
+        }
+
+        input.addEventListener("change", function () {
+            const count = input.files.length;
+
+            if (count === 0) {
+                status.textContent = "Файли не вибрано";
+            } else if (count === 1) {
+                status.textContent = input.files[0].name;
+            } else {
+                status.textContent = "Вибрано файлів: " + count;
+            }
+        });
+    });
+</script>
+{% endblock %}

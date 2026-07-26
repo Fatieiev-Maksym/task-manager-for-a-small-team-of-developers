@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Чат: {{ team.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="h3 mb-1">Чат команди: {{ team.name }}</h1>
+        <p class="text-secondary mb-0">Груповий чат для учасників команди.</p>
+    </div>
+    <div class="page-actions">
+        {% if team.meeting_url %}
+            <a class="btn btn-outline-success" href="{{ team.meeting_url }}" target="_blank" rel="noopener">
+                Онлайн-зустріч
+            </a>
+        {% endif %}
+        {% if can_edit_meeting %}
+            <a class="btn btn-outline-primary" href="{% url 'chats:meeting_edit' team.pk %}">
+                Посилання на онлайн-зустріч
+            </a>
+        {% endif %}
+        <a class="btn btn-outline-secondary" href="{% url 'chats:list' %}">До списку чатів</a>
+    </div>
+</div>
+
+{% if not team.meeting_url %}
+    <div class="alert alert-info">
+        Посилання на онлайн-зустріч ще не додано керівником команди.
+    </div>
+{% endif %}
+
+<section class="content-card">
+    <h2 class="h5 mb-3">Повідомлення</h2>
+
+    {% if chat_messages %}
+            <div class="list-group chat-list">
+            {% for chat_message in chat_messages %}
+                <div class="list-group-item chat-message">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <div>
+                            <div class="fw-semibold">{{ chat_message.author.username }}</div>
+                            <div class="text-secondary small">
+                                {{ chat_message.author.email|default:"Email не вказано" }}
+                                {% if chat_message.edited_at and not chat_message.is_deleted %}
+                                    · (редаговано)
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="text-secondary small text-nowrap">
+                            {{ chat_message.created_at|date:"d.m.Y H:i" }}
+                        </div>
+                    </div>
+                    {% if chat_message.is_deleted %}
+                        <div class="mt-3 text-secondary fst-italic">
+                            Повідомлення видалено
+                            {% if chat_message.deleted_at %}
+                                · {{ chat_message.deleted_at|date:"d.m.Y H:i" }}
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="mt-3">
+                            {{ chat_message.text|linebreaks }}
+                        </div>
+                        {% if chat_message.attachment %}
+                            <div class="chat-attachment">
+                                {% if chat_message.is_image_attachment %}
+                                    <img
+                                        class="chat-image-preview attachment-image"
+                                        src="{% url 'chats:message_download' chat_message.pk %}?thumbnail=1"
+                                        alt="{{ chat_message.attachment_filename }}"
+                                    >
+                                    <div class="chat-attachment-actions">
+                                        <a href="{% url 'chats:message_download' chat_message.pk %}?download=1">
+                                            Завантажити вкладення
+                                        </a>
+                                    </div>
+                                {% else %}
+                                    <div class="chat-file-card">
+                                        {% with ext=chat_message.attachment_extension %}
+                                            <div class="chat-file-icon">
+                                                {% if ext == "pdf" %}
+                                                    PDF
+                                                {% elif ext == "doc" or ext == "docx" %}
+                                                    DOC
+                                                {% elif ext == "xls" or ext == "xlsx" %}
+                                                    XLS
+                                                {% elif ext == "txt" %}
+                                                    TXT
+                                                {% else %}
+                                                    FILE
+                                                {% endif %}
+                                            </div>
+                                        {% endwith %}
+                                        <div class="chat-file-name">{{ chat_message.attachment_filename }}</div>
+                                        <a href="{% url 'chats:message_download' chat_message.pk %}?download=1">
+                                            Завантажити вкладення
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                        {% if chat_message.can_edit or chat_message.can_delete %}
+                            <div class="chat-message-actions d-flex gap-2">
+                                {% if chat_message.can_edit %}
+                                    <a class="btn btn-outline-primary btn-sm" href="{% url 'chats:message_edit' chat_message.pk %}">
+                                        Редагувати
+                                    </a>
+                                {% endif %}
+                                {% if chat_message.can_delete %}
+                                    <form method="post" action="{% url 'chats:message_delete' chat_message.pk %}">
+                                        {% csrf_token %}
+                                        <button class="btn btn-outline-danger btn-sm" type="submit">Видалити</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">У цьому чаті ще немає повідомлень.</div>
+    {% endif %}
+</section>
+
+<section class="content-card">
+    {% if can_send %}
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <div class="mb-3">
+                <label class="form-label" for="{{ form.text.id_for_label }}">Нове повідомлення</label>
+                {{ form.text }}
+                {{ form.text.errors }}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="{{ form.attachment.id_for_label }}">Вкладення</label>
+                {{ form.attachment }}
+                {{ form.attachment.errors }}
+                <div class="form-text">
+                    До 10 МБ. Дозволені: pdf, doc, docx, xls, xlsx, txt, png, jpg, jpeg, webp.
+                </div>
+            </div>
+
+            <button class="btn btn-primary" type="submit">Надіслати</button>
+        </form>
+    {% else %}
+        <div class="alert alert-info">
+            Ви маєте доступ лише до перегляду чату.
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

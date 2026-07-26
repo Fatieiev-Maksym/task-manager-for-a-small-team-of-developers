@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Команди{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="h3 mb-0">Команди</h1>
+    <a class="btn btn-primary" href="{% url 'teams:create' %}">Створити команду</a>
+</div>
+
+{% if teams %}
+    <div class="list-group">
+        {% for team in teams %}
+            <a class="list-group-item list-group-item-action" href="{% url 'teams:detail' team.pk %}">
+                <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div>
+                        <h2 class="h5 mb-1">{{ team.name }}</h2>
+                        <p class="mb-1 text-secondary">
+                            {{ team.description|default:"Опис не вказано"|truncatechars:120 }}
+                        </p>
+                    </div>
+                    {% if team.owner == request.user %}
+                        <span class="badge text-bg-primary">Власник</span>
+                    {% endif %}
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        У вас ще немає команд. Створіть першу команду для роботи з проєктами і задачами.
+    </div>
+{% endif %}
+{% endblock %}

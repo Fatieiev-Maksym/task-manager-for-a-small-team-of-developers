@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Профіль{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="h3 mb-0">Профіль</h1>
+</div>
+
+<div class="row g-4">
+    <section class="col-lg-6">
+        <div class="content-card h-100">
+        <h2 class="h5">Дані користувача</h2>
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+                <tbody>
+                    <tr>
+                        <th scope="row">Логін</th>
+                        <td>{{ request.user.username }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Email</th>
+                        <td>{{ request.user.email|default:"Не вказано" }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Ім'я</th>
+                        <td>{{ request.user.first_name|default:"Не вказано" }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Прізвище</th>
+                        <td>{{ request.user.last_name|default:"Не вказано" }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Дата реєстрації</th>
+                        <td>{{ request.user.date_joined|date:"d.m.Y H:i" }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        </div>
+    </section>
+
+    <section class="col-lg-6">
+        <div class="content-card h-100">
+        <h2 class="h5">Редагування профілю</h2>
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <div class="mb-3">
+                <label class="form-label" for="{{ form.email.id_for_label }}">Email</label>
+                {{ form.email }}
+                {{ form.email.errors }}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="{{ form.first_name.id_for_label }}">Ім'я</label>
+                {{ form.first_name }}
+                {{ form.first_name.errors }}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="{{ form.last_name.id_for_label }}">Прізвище</label>
+                {{ form.last_name }}
+                {{ form.last_name.errors }}
+            </div>
+
+            <button class="btn btn-primary" type="submit">Зберегти</button>
+        </form>
+        </div>
+    </section>
+</div>
+{% endblock %}

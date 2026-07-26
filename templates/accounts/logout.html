@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Вихід{% endblock %}
+
+{% block content %}
+<h1 class="h3">Вихід</h1>
+<p class="text-secondary">Ви дійсно хочете вийти з акаунта?</p>
+<form method="post">
+    {% csrf_token %}
+    <button class="btn btn-danger" type="submit">Вийти</button>
+    <a class="btn btn-outline-secondary" href="{% url 'core:dashboard' %}">Скасувати</a>
+</form>
+{% endblock %}

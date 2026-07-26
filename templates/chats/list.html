@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Чати{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="h3 mb-0">Командні чати</h1>
+    <a class="btn btn-outline-primary" href="{% url 'chats:private_list' %}">Приватні чати</a>
+</div>
+
+{% if teams %}
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+            <thead>
+                <tr>
+                    <th>Команда</th>
+                    <th>Останнє повідомлення</th>
+                    <th class="text-end">Дія</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for team in teams %}
+                    <tr>
+                        <td>{{ team.name }}</td>
+                        <td>{{ team.last_message_at|date:"d.m.Y H:i"|default:"Повідомлень ще немає" }}</td>
+                        <td class="text-end">
+                            <a class="btn btn-outline-primary btn-sm" href="{% url 'chats:team_chat' team.pk %}">
+                                Відкрити чат
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="empty-state">
+        У вас поки немає доступних командних чатів.
+    </div>
+{% endif %}
+{% endblock %}

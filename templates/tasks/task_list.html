@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load sort_tags status_tags %}
+
+{% block title %}Задачі{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="h3 mb-0">Задачі</h1>
+    {% if can_create_task %}
+        <a class="btn btn-primary" href="{% url 'tasks:create' %}">Створити задачу</a>
+    {% endif %}
+</div>
+
+{% if tasks %}
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+            <thead>
+                <tr>
+                    <th class="sortable-header">
+                        <span class="sortable-label">Назва</span>
+                        <a class="sort-arrow {% sort_column_active_class 'title' %}" href="{% sort_url 'title' %}" aria-label="Сортувати назву">{% sort_arrow 'title' %}</a>
+                    </th>
+                    <th class="sortable-header">
+                        <span class="sortable-label">Проєкт</span>
+                        <a class="sort-arrow {% sort_column_active_class 'project' %}" href="{% sort_url 'project' %}" aria-label="Сортувати проєкт">{% sort_arrow 'project' %}</a>
+                    </th>
+                    <th class="sortable-header">
+                        <span class="sortable-label">Статус</span>
+                        <a class="sort-arrow {% sort_column_active_class 'status' %}" href="{% sort_url 'status' %}" aria-label="Сортувати статус">{% sort_arrow 'status' %}</a>
+                    </th>
+                    <th class="sortable-header">
+                        <span class="sortable-label">Пріоритет</span>
+                        <a class="sort-arrow {% sort_column_active_class 'priority' %}" href="{% sort_url 'priority' %}" aria-label="Сортувати пріоритет">{% sort_arrow 'priority' %}</a>
+                    </th>
+                    <th class="sortable-header">
+                        <span class="sortable-label">Виконавець</span>
+                        <a class="sort-arrow {% sort_column_active_class 'assignee' %}" href="{% sort_url 'assignee' %}" aria-label="Сортувати виконавця">{% sort_arrow 'assignee' %}</a>
+                    </th>
+                    <th class="sortable-header">
+                        <span class="sortable-label">Дедлайн</span>
+                        <a class="sort-arrow {% sort_column_active_class 'deadline' %}" href="{% sort_url 'deadline' %}" aria-label="Сортувати дедлайн">{% sort_arrow 'deadline' %}</a>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                    <tr class="{% if task.assignee_id == request.user.id %}{% with status_name=task.status.name|lower %}{% if status_name == 'to do' %}task-row-todo{% elif status_name == 'in progress' %}task-row-in-progress{% elif status_name == 'done' %}task-row-done{% elif status_name == 'in review' %}task-row-in-review{% endif %}{% endwith %}{% endif %}">
+                        <td><a href="{% url 'tasks:detail' task.pk %}">{{ task.title }}</a></td>
+                        <td>{{ task.project.name }}</td>
+                        <td>{{ task.status.name|task_status_uk }}</td>
+                        <td>{{ task.priority|task_priority_uk }}</td>
+                        <td>{{ task.assignee.username|default:"Не призначено" }}</td>
+                        <td>{{ task.deadline|date:"d.m.Y"|default:"Не вказано" }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="empty-state">
+        У доступних вам проєктах ще немає задач.
+    </div>
+{% endif %}
+{% endblock %}

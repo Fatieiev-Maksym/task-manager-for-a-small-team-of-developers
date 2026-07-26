@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% load status_tags %}
+
+{% block title %}Панель керування{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="h3 mb-0">Панель керування</h1>
+</div>
+
+{% if team_count == 0 %}
+    <div class="empty-state mb-3">У вас ще немає команд.</div>
+{% endif %}
+
+{% if task_count == 0 %}
+    <div class="empty-state mb-3">У вас ще немає задач.</div>
+{% endif %}
+
+<section class="mb-4">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-5 g-3 dashboard-stats">
+        <div class="col">
+            <div class="stat-card h-100">
+                <div class="text-secondary small">Команди</div>
+                <div class="fs-3 fw-semibold">{{ team_count }}</div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="stat-card h-100">
+                <div class="text-secondary small">Проєкти</div>
+                <div class="fs-3 fw-semibold">{{ project_count }}</div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="stat-card h-100">
+                <div class="text-secondary small">Задачі</div>
+                <div class="fs-3 fw-semibold">{{ task_count }}</div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="stat-card h-100">
+                <div class="text-secondary small">Задачі з високим пріоритетом</div>
+                <div class="fs-3 fw-semibold">{{ high_priority_count }}</div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="stat-card h-100">
+                <div class="text-secondary small">Сповіщення</div>
+                <div class="fs-3 fw-semibold">{{ unread_notification_count }}</div>
+                <a class="btn btn-outline-secondary btn-sm mt-2" href="{% url 'notifications:list' %}">Переглянути</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-4">
+    <h2 class="h5 mb-3">Статуси задач</h2>
+    <div class="row g-3">
+        <div class="col-md-3">
+            <div class="stat-card status-card status-todo h-100">
+                <div class="text-secondary small">До виконання</div>
+                <div class="fs-4 fw-semibold">{{ todo_count }}</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card status-card status-progress h-100">
+                <div class="text-secondary small">У роботі</div>
+                <div class="fs-4 fw-semibold">{{ in_progress_count }}</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card status-card status-review h-100">
+                <div class="text-secondary small">На перевірці</div>
+                <div class="fs-4 fw-semibold">{{ in_review_count }}</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card status-card status-done h-100">
+                <div class="text-secondary small">Виконано</div>
+                <div class="fs-4 fw-semibold">{{ done_count }}</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="row g-4">
+    <section class="col-lg-6">
+        <div class="content-card h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h5 mb-0">Дедлайни задач</h2>
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'tasks:list' %}">Усі задачі</a>
+        </div>
+
+        {% if upcoming_deadlines %}
+            <div class="list-group">
+                {% for task in upcoming_deadlines %}
+                    <a class="list-group-item list-group-item-action" href="{% url 'tasks:detail' task.pk %}">
+                        <div class="d-flex justify-content-between gap-3">
+                            <div>
+                                <div class="fw-semibold">{{ task.title }}</div>
+                                <div class="text-secondary small">{{ task.project.name }} · {{ task.status.name|task_status_uk }}</div>
+                            </div>
+                            <div class="deadline-meta text-nowrap">
+                                <span>{{ task.deadline|date:"d.m.Y" }}</span>
+                                {% if task.deadline_label %}
+                                    <span class="deadline-badge {{ task.deadline_label_class }}">{{ task.deadline_label }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">Немає задач з дедлайнами.</div>
+        {% endif %}
+        </div>
+    </section>
+
+    <section class="col-lg-6">
+        <div class="content-card h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h5 mb-0">Останні задачі</h2>
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'tasks:list' %}">Усі задачі</a>
+        </div>
+
+        {% if recent_tasks %}
+            <div class="list-group">
+                {% for task in recent_tasks %}
+                    <a class="list-group-item list-group-item-action" href="{% url 'tasks:detail' task.pk %}">
+                        <div class="d-flex justify-content-between gap-3">
+                            <div>
+                                <div class="fw-semibold">{{ task.title }}</div>
+                                <div class="text-secondary small">{{ task.project.name }} · {{ task.status.name|task_status_uk }}</div>
+                            </div>
+                            <div class="text-nowrap">{{ task.updated_at|date:"d.m.Y H:i" }}</div>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">У вас ще немає задач.</div>
+        {% endif %}
+        </div>
+    </section>
+</div>
+{% endblock %}
