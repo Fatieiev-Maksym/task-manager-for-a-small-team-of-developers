@@ -25,17 +25,17 @@ User roles:
 
 Demo accounts:
 Team lead (Керівник проєкту)
-Demo_kerivnyk
+login: Demo_kerivnyk
 password: 151681515DEMO
 
 Developer (Розробник)
-Demo_developer
+login: Demo_developer
 password: 151681515DEV
 
 Tester (Тестер)
-Demo_tester
+login: Demo_tester
 password: 151681515TEST
 
 Viewer (Користувач з правом перегляду)
-Demo_viewer
+login: Demo_viewer
 password: 151681515VIEW
