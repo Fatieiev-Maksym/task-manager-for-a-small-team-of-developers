@@ -24,6 +24,7 @@ User roles:
 - Viewer (has read-only access to the avaible project information)
 
 Demo accounts:
+
 Team lead (Керівник проєкту)
 login: Demo_kerivnyk
 password: 151681515DEMO
